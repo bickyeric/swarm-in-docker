@@ -1,0 +1,32 @@
+version: "3.9"
+
+services:
+  master:
+    image: docker:dind
+    privileged: true
+    networks:
+      swarmindocker:
+        ipv4_address: 172.16.238.2
+    ports:
+      - '2375:2375'
+      - '8080:8080'
+      - '9090:9090'
+      - '3000:3000'
+    entrypoint: ['dockerd', '--host=tcp://0.0.0.0:2375', '--host=unix:///var/run/docker.sock']
+    volumes:
+      - './daemon.json:/etc/docker/daemon.json'
+  node:
+    image: docker:dind
+    privileged: true
+    depends_on:
+      - master
+    networks:
+      swarmindocker:
+    volumes:
+      - './daemon.json:/etc/docker/daemon.json'
+
+networks:
+  swarmindocker:
+    ipam:
+      config:
+        - subnet: "172.16.238.0/24"
